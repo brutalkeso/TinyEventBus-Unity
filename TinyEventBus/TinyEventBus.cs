@@ -6,24 +6,22 @@ using System.Reflection;
 
 public class TinyEventBus : EventBus {
 
-    private static TinyEventBus _sharedBus;
-
-    public static EventBus sharedBus()
-    {
-        TinyEventBus._sharedBus = TinyEventBus._sharedBus != null ? TinyEventBus._sharedBus : new TinyEventBus();
-        return TinyEventBus._sharedBus;
-    }
-
-    private Dictionary<string, List<ObserverObject>> events;
     private class ObserverObject {
         public object observer;
         public string methodString;
-        public bool markedForDestruction = false;
     }
+	private Dictionary<string, List<ObserverObject>> events;
 
     public TinyEventBus() {
         this.events = new Dictionary<string, List<ObserverObject>>();
     }
+
+	private static TinyEventBus _sharedBus;
+	public static EventBus sharedBus()
+	{
+		TinyEventBus._sharedBus = TinyEventBus._sharedBus != null ? TinyEventBus._sharedBus : new TinyEventBus();
+		return TinyEventBus._sharedBus;
+	}
 
     /**
 	 * observer: Object interested in event
@@ -104,20 +102,29 @@ public class TinyEventBus : EventBus {
         try {
             method.Invoke(obj.observer, signature);
         } catch (TargetParameterCountException e) {
-            Debug.Log("ERROR: Wrong signature on method " + obj.methodString + ". Method should have signature: functionName(Dictionary<string, object> data) ");
-            Debug.Log("Stacktrace: ");
-            Debug.Log(e);
+			this.printWrongSignatureError (e, obj);
         } catch (TargetInvocationException e) {
-            if (e.InnerException is MissingReferenceException) {
-                Debug.Log("ERROR: Calling method " + obj.methodString + ". Tried to post to a null observer, did you forget to remove observer when destroying an object?");
-            }
-            Debug.Log("Stacktrace: ");
-            Debug.Log(e);
+			this.printTargetInvocationError (e, obj);
         } catch (Exception e) {
-            Debug.Log("went here");
             Debug.Log(e);
         }
         return true;
     }
+
+	private void printWrongSignatureError(Exception e, ObserverObject obj) {
+		Debug.Log("ERROR: Wrong signature on method " + obj.methodString + 
+			". Method should have signature: functionName(Dictionary<string, object> data) ");
+		Debug.Log("Stacktrace: ");
+		Debug.Log(e);
+	}
+
+	private void printTargetInvocationError(Exception e, ObserverObject obj) {
+		if (e.InnerException is MissingReferenceException) {
+			Debug.Log("ERROR: Calling method " + obj.methodString + 
+				". Tried to post to a null observer, did you forget to remove observer when destroying an object?");
+		}
+		Debug.Log("Stacktrace: ");
+		Debug.Log(e);
+	}
 
 }
