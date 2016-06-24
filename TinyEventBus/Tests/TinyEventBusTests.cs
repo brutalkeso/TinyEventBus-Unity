@@ -119,8 +119,20 @@ public class TinyEventBusTests : MonoBehaviour
         Dictionary<string, object> dict = new Dictionary<string, object>();
         eventBus.postEventForKey("testKey", dict);
 
+		//test posting method with variables, should send correct
+		Debug.Log("Test 12: Posting event with dictionary data");
+		eventBus = new TinyEventBus();
+		Debug.Log("Adding observer for one key");
+		eventBus.addObserver(this, "testKey", "testMethodWithData2");
+		Debug.Log("Posting with dictionary, with int value 2");
+		dict = new Dictionary<string, object>();
+		dict.Add ("dataKey", 2);
+		eventBus.postEventForKey("testKey", dict);
+
+		//testMethodWithData2
+
         //test posting event which is connected to method with incorrect signature
-        Debug.Log("Test 12: Posting event which is connected to method with incorrect signature");
+        Debug.Log("Test 13: Posting event which is connected to method with incorrect signature");
         Debug.Log("should result in nice error message pointing to the incorrect method");
         eventBus = new TinyEventBus();
         Debug.Log("Adding observer for one key");
@@ -165,9 +177,15 @@ public class TinyEventBusTests : MonoBehaviour
 
     public void testMethodWithData(Dictionary<string, object> data)
     {
-        string a = data != null ? "SUCCESS" : "FAILURE";
-        Debug.Log("Test 11 finished with " + a);
+        string result = data != null ? "SUCCESS" : "FAILURE";
+        Debug.Log("Test 11 finished with " + result);
     }
+
+	public void testMethodWithData2(Dictionary<string, object> data) 
+	{
+		string result = data != null && (int)(data["dataKey"]) == 2 ? "SUCCESS" : "FAILURE";
+		Debug.Log ("Test 12 finished with " + result);
+	}
 
     public void incorrectMethod()
     {
