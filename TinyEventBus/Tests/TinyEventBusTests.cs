@@ -119,8 +119,8 @@ public class TinyEventBusTests : MonoBehaviour
         Dictionary<string, object> dict = new Dictionary<string, object>();
         eventBus.postEventForKey("testKey", dict);
 
-		//test posting method with variables, should send correct
-		Debug.Log("Test 12: Posting event with dictionary data");
+		//test posting method with variables, should send correct object
+		Debug.Log("Test 12: Posting event with dictionary data (copy by value data type)");
 		eventBus = new TinyEventBus();
 		Debug.Log("Adding observer for one key");
 		eventBus.addObserver(this, "testKey", "testMethodWithData2");
@@ -129,10 +129,22 @@ public class TinyEventBusTests : MonoBehaviour
 		dict.Add ("dataKey", 2);
 		eventBus.postEventForKey("testKey", dict);
 
+		//test posting method with variables, should send correct object
+		Debug.Log("Test 13: Posting event with dictionary data (copy by reference data type)");
+		eventBus = new TinyEventBus();
+		Debug.Log("Adding observer for one key");
+		eventBus.addObserver(this, "testKey", "testMethodWithData3");
+		Debug.Log("Posting with dictionary, with GameObject");
+		dict = new Dictionary<string, object>();
+		GameObject o = new GameObject();
+		o.name = "testName";
+		dict.Add ("dataKey", o);
+		eventBus.postEventForKey("testKey", dict);
+
 		//testMethodWithData2
 
         //test posting event which is connected to method with incorrect signature
-        Debug.Log("Test 13: Posting event which is connected to method with incorrect signature");
+        Debug.Log("Test 14: Posting event which is connected to method with incorrect signature");
         Debug.Log("should result in nice error message pointing to the incorrect method");
         eventBus = new TinyEventBus();
         Debug.Log("Adding observer for one key");
@@ -185,6 +197,13 @@ public class TinyEventBusTests : MonoBehaviour
 	{
 		string result = data != null && (int)(data["dataKey"]) == 2 ? "SUCCESS" : "FAILURE";
 		Debug.Log ("Test 12 finished with " + result);
+	}
+
+	public void testMethodWithData3(Dictionary<string, object> data) 
+	{
+		GameObject o = (GameObject)(data ["dataKey"]);
+		string result = data != null && o.name == "testName" ? "SUCCESS" : "FAILURE";
+		Debug.Log ("Test 13 finished with " + result);
 	}
 
     public void incorrectMethod()
